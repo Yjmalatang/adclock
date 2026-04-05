@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f1117">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <title>Ad Clock</title>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-left">
+        <span class="logo">⏱</span>
+        <h1>Ad Clock</h1>
+      </div>
+      <div class="header-right">
+        <span class="live-beijing" id="live-beijing"></span>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="converter">时段反推</button>
+      <button class="tab" data-tab="clock">世界时钟</button>
+      <button class="tab" data-tab="midnight">零点对照</button>
+    </nav>
+
+    <!-- Tab 1: Converter -->
+    <section id="tab-converter" class="tab-content active">
+      <div class="converter-input-card">
+        <div class="converter-section">
+          <label class="field-label">目标投放时段（当地时间）</label>
+          <div class="time-range-row">
+            <input type="time" id="conv-start" class="time-input" value="18:00">
+            <span class="range-sep">→</span>
+            <input type="time" id="conv-end" class="time-input" value="22:00">
+          </div>
+        </div>
+        <div class="preset-chips">
+          <button class="preset-chip" data-start="06:00" data-end="09:00">☀️ 早高峰</button>
+          <button class="preset-chip" data-start="11:00" data-end="14:00">🍽 午间</button>
+          <button class="preset-chip selected" data-start="18:00" data-end="22:00">🌙 晚高峰</button>
+          <button class="preset-chip" data-start="21:00" data-end="01:00">🦉 深夜</button>
+          <button class="preset-chip" data-start="00:00" data-end="23:59">📊 全天</button>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <label class="field-label">🇨🇳 对应北京时间</label>
+        <button id="btn-add-region" class="btn-add-small">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          添加地区
+        </button>
+      </div>
+      <div id="region-list" class="region-list"></div>
+      <div id="add-region-panel" class="add-region-panel" style="display:none;">
+        <select id="add-region-tz" class="select-field"></select>
+        <div class="add-region-actions">
+          <button id="btn-cancel-region" class="btn-secondary btn-sm">取消</button>
+          <button id="btn-confirm-region" class="btn-primary btn-sm">添加</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: World Clock -->
+    <section id="tab-clock" class="tab-content">
+      <div class="section-header">
+        <span></span>
+        <button id="btn-add-clock" class="btn-add-small">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          添加时钟
+        </button>
+      </div>
+      <div id="clock-list" class="clock-list"></div>
+      <div id="empty-clock" class="empty-state" style="display:none;">
+        <p>点击"添加时钟"来添加</p>
+      </div>
+    </section>
+
+    <!-- Tab 3: Midnight Reference -->
+    <section id="tab-midnight" class="tab-content">
+      <div class="midnight-desc">
+        <span class="field-label">各地 0:00 → 北京几点？</span>
+      </div>
+      <div id="midnight-list" class="midnight-list"></div>
+    </section>
+
+    <!-- Modal -->
+    <div id="modal-add" class="modal" style="display:none;">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <h3>添加时钟</h3>
+        <div class="modal-body">
+          <label class="field-label">选择时区</label>
+          <select id="add-timezone" class="select-field"></select>
+          <label class="field-label">显示名称 <span class="label-hint">（自动填入，可修改）</span></label>
+          <input type="text" id="add-label" class="text-input">
+        </div>
+        <div class="modal-footer">
+          <button id="btn-cancel-add" class="btn-secondary">取消</button>
+          <button id="btn-confirm-add" class="btn-primary">添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
