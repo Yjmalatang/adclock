@@ -226,11 +226,10 @@ function renderRegions() {
 
     const el = document.createElement('div');
     el.className = 'region-item';
-    el.draggable = true;
     el.dataset.idx = idx;
 
     el.innerHTML = `
-      <div class="region-grip" title="拖拽排序">⠿</div>
+      <div class="region-grip" draggable="true" title="拖拽排序">⠿</div>
       <div class="region-flag">${info.flag}</div>
       <div class="region-info">
         <div class="region-name">${info.label}</div>
@@ -243,13 +242,14 @@ function renderRegions() {
       <button class="region-remove" data-idx="${idx}" title="删除">✕</button>
     `;
 
-    // Drag events
-    el.addEventListener('dragstart', (ev) => {
+    // Drag events — only grip triggers drag
+    const grip = el.querySelector('.region-grip');
+    grip.addEventListener('dragstart', (ev) => {
       dragIdx = idx;
       el.classList.add('dragging');
       ev.dataTransfer.effectAllowed = 'move';
     });
-    el.addEventListener('dragend', () => {
+    grip.addEventListener('dragend', () => {
       el.classList.remove('dragging');
       dragIdx = null;
       document.querySelectorAll('.region-item').forEach(x => {
