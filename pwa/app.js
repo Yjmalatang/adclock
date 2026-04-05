@@ -62,7 +62,6 @@ const TIMEZONE_DB = [
 // ── State ──
 let regions = [];
 let clocks = [];
-let dragIdx = null; // for drag-drop
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -229,7 +228,6 @@ function renderRegions() {
     el.dataset.idx = idx;
 
     el.innerHTML = `
-      <div class="region-grip" title="长按拖拽排序">⠿</div>
       <div class="region-flag">${info.flag}</div>
       <div class="region-info">
         <div class="region-name">${info.label}</div>
@@ -445,141 +443,3 @@ function closeModal() {
   document.getElementById('modal-add').style.display = 'none';
 }
 
-// ══════════════════════════════════════
-// Touch-compatible drag-to-reorder
-// Based on SortableJS pattern: long-press + movement threshold
-// ══════════════════════════════════════
-(function initDragReorder() {
-  const LONG_PRESS_MS = 200;
-  const MOVE_THRESHOLD = 8;
-
-  let drag = null;
-
-  const listEl = document.getElementById('region-list');
-  if (!listEl) return;
-
-  listEl.addEventListener('touchstart', onDown, { passive: true });
-  listEl.addEventListener('mousedown', onDown);
-
-  function getXY(e) {
-    const t = e.touches ? e.touches[0] : e;
-    return { x: t.clientX, y: t.clientY };
-  }
-
-  function onDown(e) {
-    const grip = e.target.closest('.region-grip');
-    if (!grip) return;
-    const item = grip.closest('.region-item');
-    if (!item) return;
-
-    const pt = getXY(e);
-    drag = {
-      phase: 'pending',
-      idx: parseInt(item.dataset.idx),
-      item: item,
-      startX: pt.x,
-      startY: pt.y,
-      overIdx: undefined,
-      insertBefore: true,
-      timer: setTimeout(() => activate(), LONG_PRESS_MS),
-    };
-
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onUp, { passive: true });
-    document.addEventListener('touchcancel', onUp, { passive: true });
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }
-
-  function activate() {
-    if (!drag || drag.phase !== 'pending') return;
-    drag.phase = 'active';
-    drag.item.classList.add('dragging');
-    if (navigator.vibrate) navigator.vibrate(30);
-  }
-
-  function onMove(e) {
-    if (!drag) return;
-    const pt = getXY(e);
-
-    if (drag.phase === 'pending') {
-      // Moved too far before long-press fired → cancel drag, let browser scroll
-      if (Math.max(Math.abs(pt.x - drag.startX), Math.abs(pt.y - drag.startY)) >= MOVE_THRESHOLD) {
-        cancel();
-      }
-      return;
-    }
-
-    // Active drag — block scrolling
-    if (e.cancelable) e.preventDefault();
-
-    const dy = pt.y - drag.startY;
-    drag.item.style.transform = `translateY(${dy}px) scale(0.97)`;
-    drag.item.style.zIndex = '10';
-    drag.item.style.position = 'relative';
-
-    // Determine drop target
-    const siblings = [...listEl.children];
-    drag.overIdx = undefined;
-    for (const sib of siblings) {
-      sib.classList.remove('drag-over', 'drag-over-below');
-      if (sib === drag.item) continue;
-      const rect = sib.getBoundingClientRect();
-      if (pt.y >= rect.top && pt.y <= rect.bottom) {
-        const mid = rect.top + rect.height / 2;
-        if (pt.y < mid) {
-          sib.classList.add('drag-over');
-        } else {
-          sib.classList.add('drag-over-below');
-        }
-        drag.overIdx = parseInt(sib.dataset.idx);
-        drag.insertBefore = pt.y < mid;
-      }
-    }
-  }
-
-  function onUp() {
-    if (!drag) return;
-
-    if (drag.phase === 'active' && drag.overIdx !== undefined && drag.overIdx !== drag.idx) {
-      const moved = regions.splice(drag.idx, 1)[0];
-      let target = drag.overIdx;
-      if (drag.idx < drag.overIdx) target--;
-      if (!drag.insertBefore) target++;
-      regions.splice(target, 0, moved);
-      save();
-      renderRegions();
-    }
-
-    cleanup();
-  }
-
-  function cancel() {
-    if (drag) clearTimeout(drag.timer);
-    removeListeners();
-    drag = null;
-  }
-
-  function cleanup() {
-    if (drag) {
-      clearTimeout(drag.timer);
-      drag.item.style.transform = '';
-      drag.item.style.zIndex = '';
-      drag.item.style.position = '';
-      drag.item.classList.remove('dragging');
-    }
-    listEl.querySelectorAll('.region-item').forEach(el => {
-      el.classList.remove('drag-over', 'drag-over-below');
-    });
-    removeListeners();
-    drag = null;
-  }
-
-  function removeListeners() {
-    document.removeEventListener('touchmove', onMove);
-    document.removeEventListener('touchend', onUp);
-    document.removeEventListener('touchcancel', onUp);
-    document.removeEventListener('mousemove', onMove);
-    document.removeEventListener('mouseup', onUp);
-  }
-})();
