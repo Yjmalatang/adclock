@@ -2,7 +2,7 @@
 
 信息流投放时区转换工具，帮助出海投放团队快速计算全球各地投放时段与北京时间的对应关系。
 
-**在线使用** → [https://takeoutnft.github.io/adclock/](https://takeoutnft.github.io/adclock/)
+**在线使用** → [https://yjmalatang.github.io/adclock/](https://yjmalatang.github.io/adclock/)
 
 ## 功能
 
@@ -16,7 +16,8 @@
 
 ## 使用方式
 
-- 浏览器直接访问，支持 PWA 安装到手机桌面
+- **PWA 网页版**：浏览器直接访问，支持安装到手机桌面
+- **Chrome 扩展**：`extension/` 目录，开发者模式加载即可使用
 - 纯前端，无需后端，数据保存在本地
 
 ## Tech Stack
